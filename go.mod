@@ -1,4 +1,4 @@
-module sneaker
+module github.com/grantchen/go-sneaker
 
 go 1.12
 
