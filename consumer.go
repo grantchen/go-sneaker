@@ -6,24 +6,22 @@ import (
 )
 
 type Consumer struct {
-	Channel *amqp.Channel
+	Connection *amqp.Connection
+	Channel    *amqp.Channel
 }
 
 type fn func([]byte)
 
 func NewConsumer(amqpUrl string) *Consumer {
 	amqpConn, err := amqp.Dial(amqpUrl)
-	defer amqpConn.Close()
 	if err != nil {
 		panic("failed to connect rabbitMQ")
 	}
-
 	channel, err := amqpConn.Channel()
-	defer channel.Close()
 	if err != nil {
 		panic("failed to init rabbitMQ Channel")
 	}
-	consumer := Consumer{Channel: channel}
+	consumer := Consumer{Connection: amqpConn, Channel: channel}
 	return &consumer
 }
 
@@ -32,6 +30,8 @@ func NewConsumer(amqpUrl string) *Consumer {
 // queueName - queueName
 func (c *Consumer) Consume(exchangeName string,
 	queueName string, args map[string]interface{}, f fn) {
+	defer c.Connection.Close()
+	defer c.Channel.Close()
 	defaultArgs := map[string]interface{}{
 		"durable": true, "autoDelete": false, "autoAck": false,
 		"exclusive": false, "noWait": false,
