@@ -1,7 +1,6 @@
 package sneaker
 
 import (
-	// "github.com/imdario/mergo"
 	"github.com/streadway/amqp"
 )
 
@@ -9,7 +8,7 @@ type Publisher struct {
 	Channel *amqp.Channel
 }
 
-func NewPublisher(amqpUrl string) *Worker {
+func NewPublisher(amqpUrl string) *Publisher {
 	amqpConn, err := amqp.Dial(amqpUrl)
 	defer amqpConn.Close()
 	if err != nil {
@@ -21,8 +20,8 @@ func NewPublisher(amqpUrl string) *Worker {
 	if err != nil {
 		panic("failed to init rabbitMQ Channel")
 	}
-	worker := Worker{Channel: channel}
-	return &worker
+	publisher := Publisher{Channel: channel}
+	return &publisher
 }
 
 // publish a worker queue
