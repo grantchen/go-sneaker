@@ -88,6 +88,9 @@ func (c *Consumer) Consume(exchangeName string,
 			go func() {
 				for msg := range msgs {
 					f(msg.Body)
+					if !defaultArgs["autoAck"].(bool) {
+						msg.Ack(false)
+					}
 				}
 			}()
 		}
