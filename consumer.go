@@ -6,13 +6,14 @@ import (
 )
 
 type Consumer struct {
-	Connection *amqp.Connection
-	Channel    *amqp.Channel
+	Connection   *amqp.Connection
+	Channel      *amqp.Channel
+	ExchangeName string
 }
 
 type fn func([]byte)
 
-func NewConsumer(amqpUrl string) *Consumer {
+func NewConsumer(amqpUrl, exchangeName string) *Consumer {
 	amqpConn, err := amqp.Dial(amqpUrl)
 	if err != nil {
 		panic("failed to connect rabbitMQ")
@@ -21,15 +22,18 @@ func NewConsumer(amqpUrl string) *Consumer {
 	if err != nil {
 		panic("failed to init rabbitMQ Channel")
 	}
-	consumer := Consumer{Connection: amqpConn, Channel: channel}
+	if exchangeName == "" {
+		exchangeName = "go_sneaker"
+	}
+	consumer := Consumer{Connection: amqpConn,
+		Channel: channel, ExchangeName: exchangeName}
 	return &consumer
 }
 
 // consume a worker queue
 // exchaneName - exchange Name
 // queueName - queueName
-func (c *Consumer) Consume(exchangeName string,
-	queueName string, args map[string]interface{}, f fn) {
+func (c *Consumer) Consume(queueName string, args map[string]interface{}, f fn) {
 	defaultArgs := map[string]interface{}{
 		"durable": true, "autoDelete": false, "autoAck": false,
 		"exclusive": false, "noWait": false,
@@ -38,13 +42,13 @@ func (c *Consumer) Consume(exchangeName string,
 		panic(err)
 	}
 	err := c.Channel.ExchangeDeclare(
-		exchangeName, // name
-		"direct",     // type
-		true,         // durable
-		false,        // auto-deleted
-		false,        // internal
-		false,        // no-wait
-		nil,          // arguments
+		c.ExchangeName, // name
+		"direct",       // type
+		true,           // durable
+		false,          // auto-deleted
+		false,          // internal
+		false,          // no-wait
+		nil,            // arguments
 	)
 	if err != nil {
 		panic(err)
@@ -60,9 +64,9 @@ func (c *Consumer) Consume(exchangeName string,
 	)
 
 	err = c.Channel.QueueBind(
-		queue.Name,   // queue name
-		queue.Name,   // routing key
-		exchangeName, // exchange
+		queue.Name,     // queue name
+		queue.Name,     // routing key
+		c.ExchangeName, // exchange
 		false,
 		nil)
 	if err != nil {

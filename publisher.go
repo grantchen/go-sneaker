@@ -5,10 +5,11 @@ import (
 )
 
 type Publisher struct {
-	Channel *amqp.Channel
+	Channel      *amqp.Channel
+	ExchangeName string
 }
 
-func NewPublisher(amqpUrl string) *Publisher {
+func NewPublisher(amqpUrl, exchangeName string) *Publisher {
 	amqpConn, err := amqp.Dial(amqpUrl)
 	defer amqpConn.Close()
 	if err != nil {
@@ -25,25 +26,24 @@ func NewPublisher(amqpUrl string) *Publisher {
 }
 
 // publish a worker queue
-func (c *Publisher) Publish(exchangeName,
-	queueName, bodyContentType string, body []byte) {
+func (c *Publisher) Publish(queueName, bodyContentType string, body []byte) {
 	err := c.Channel.ExchangeDeclare(
-		exchangeName, // name
-		"direct",     // type
-		true,         // durable
-		false,        // auto-deleted
-		false,        // internal
-		false,        // no-wait
-		nil,          // arguments
+		c.ExchangeName, // name
+		"direct",       // type
+		true,           // durable
+		false,          // auto-deleted
+		false,          // internal
+		false,          // no-wait
+		nil,            // arguments
 	)
 	if err != nil {
 		panic("Failed to declare an exchange")
 	}
 	err = c.Channel.Publish(
-		exchangeName, // exchange
-		queueName,    // routing key
-		false,        // mandatory
-		false,        // immediate
+		c.ExchangeName, // exchange
+		queueName,      // routing key
+		false,          // mandatory
+		false,          // immediate
 		amqp.Publishing{
 			ContentType: bodyContentType,
 			Body:        []byte(body),
