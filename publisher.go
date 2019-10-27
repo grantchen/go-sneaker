@@ -9,24 +9,22 @@ type Publisher struct {
 	ExchangeName string
 }
 
-func NewPublisher(amqpUrl, exchangeName string) *Publisher {
+func NewPublisher(amqpUrl, exchangeName string) (*Publisher, error) {
 	amqpConn, err := amqp.Dial(amqpUrl)
-	defer amqpConn.Close()
 	if err != nil {
-		panic("failed to connect rabbitMQ")
+		return nil, err
 	}
 
 	channel, err := amqpConn.Channel()
-	defer channel.Close()
 	if err != nil {
-		panic("failed to init rabbitMQ Channel")
+		return nil, err
 	}
 	publisher := Publisher{Channel: channel}
-	return &publisher
+	return &publisher, nil
 }
 
 // publish a worker queue
-func (c *Publisher) Publish(queueName, bodyContentType string, body []byte) {
+func (c *Publisher) Publish(queueName, bodyContentType string, body []byte) error {
 	err := c.Channel.ExchangeDeclare(
 		c.ExchangeName, // name
 		"direct",       // type
@@ -37,7 +35,7 @@ func (c *Publisher) Publish(queueName, bodyContentType string, body []byte) {
 		nil,            // arguments
 	)
 	if err != nil {
-		panic("Failed to declare an exchange")
+		return err
 	}
 	err = c.Channel.Publish(
 		c.ExchangeName, // exchange
@@ -48,5 +46,8 @@ func (c *Publisher) Publish(queueName, bodyContentType string, body []byte) {
 			ContentType: bodyContentType,
 			Body:        []byte(body),
 		})
-	panic("Failed to publish a message")
+	if err != nil {
+		return err
+	}
+	return nil
 }

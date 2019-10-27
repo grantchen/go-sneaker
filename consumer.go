@@ -13,33 +13,33 @@ type Consumer struct {
 
 type fn func([]byte)
 
-func NewConsumer(amqpUrl, exchangeName string) *Consumer {
+func NewConsumer(amqpUrl, exchangeName string) (*Consumer, error) {
 	amqpConn, err := amqp.Dial(amqpUrl)
 	if err != nil {
-		panic("failed to connect rabbitMQ")
+		return nil, err
 	}
 	channel, err := amqpConn.Channel()
 	if err != nil {
-		panic("failed to init rabbitMQ Channel")
+		return nil, err
 	}
 	if exchangeName == "" {
 		exchangeName = "go_sneaker"
 	}
 	consumer := Consumer{Connection: amqpConn,
 		Channel: channel, ExchangeName: exchangeName}
-	return &consumer
+	return &consumer, nil
 }
 
 // consume a worker queue
 // exchaneName - exchange Name
 // queueName - queueName
-func (c *Consumer) Consume(queueName string, args map[string]interface{}, f fn) {
+func (c *Consumer) Consume(queueName string, args map[string]interface{}, f fn) error {
 	defaultArgs := map[string]interface{}{
 		"durable": true, "autoDelete": false, "autoAck": false,
 		"exclusive": false, "noWait": false,
 		"noLocal": false, "consumer": "", "threads": 5}
 	if err := mergo.Merge(&defaultArgs, args, mergo.WithOverride); err != nil {
-		panic(err)
+		return err
 	}
 	err := c.Channel.ExchangeDeclare(
 		c.ExchangeName, // name
@@ -51,7 +51,7 @@ func (c *Consumer) Consume(queueName string, args map[string]interface{}, f fn) 
 		nil,            // arguments
 	)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	queue, err := c.Channel.QueueDeclare(
@@ -70,7 +70,7 @@ func (c *Consumer) Consume(queueName string, args map[string]interface{}, f fn) 
 		false,
 		nil)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	msgs, err := c.Channel.Consume(
@@ -79,7 +79,7 @@ func (c *Consumer) Consume(queueName string, args map[string]interface{}, f fn) 
 		defaultArgs["noLocal"].(bool), defaultArgs["noWait"].(bool),
 		nil)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	go func() {
 		defer c.Connection.Close()
@@ -98,4 +98,5 @@ func (c *Consumer) Consume(queueName string, args map[string]interface{}, f fn) 
 		}
 		<-forever
 	}()
+	return nil
 }
