@@ -30,8 +30,6 @@ func NewConsumer(amqpUrl string) *Consumer {
 // queueName - queueName
 func (c *Consumer) Consume(exchangeName string,
 	queueName string, args map[string]interface{}, f fn) {
-	defer c.Connection.Close()
-	defer c.Channel.Close()
 	defaultArgs := map[string]interface{}{
 		"durable": true, "autoDelete": false, "autoAck": false,
 		"exclusive": false, "noWait": false,
