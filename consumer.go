@@ -79,12 +79,18 @@ func (c *Consumer) Consume(exchangeName string,
 	if err != nil {
 		panic(err)
 	}
-	threadCount := defaultArgs["threads"].(int)
-	for i := 0; i < threadCount; i++ {
-		go func() {
-			for msg := range msgs {
-				f(msg.Body)
-			}
-		}()
-	}
+	go func() {
+		defer c.Connection.Close()
+		defer c.Channel.Close()
+		forever := make(chan bool)
+		threadCount := defaultArgs["threads"].(int)
+		for i := 0; i < threadCount; i++ {
+			go func() {
+				for msg := range msgs {
+					f(msg.Body)
+				}
+			}()
+		}
+		<-forever
+	}()
 }
