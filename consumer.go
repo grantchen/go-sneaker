@@ -37,7 +37,7 @@ func (c *Consumer) Consume(exchangeName string,
 		"exclusive": false, "noWait": false,
 		"noLocal": false, "consumer": "", "threads": 5}
 	if err := mergo.Merge(&defaultArgs, args, mergo.WithOverride); err != nil {
-		panic("Failed to Merge args")
+		panic(err)
 	}
 	err := c.Channel.ExchangeDeclare(
 		exchangeName, // name
@@ -49,7 +49,7 @@ func (c *Consumer) Consume(exchangeName string,
 		nil,          // arguments
 	)
 	if err != nil {
-		panic("Failed to declare an exchange")
+		panic(err)
 	}
 
 	queue, err := c.Channel.QueueDeclare(
@@ -68,7 +68,7 @@ func (c *Consumer) Consume(exchangeName string,
 		false,
 		nil)
 	if err != nil {
-		panic("Failed to bind a queue")
+		panic(err)
 	}
 
 	msgs, err := c.Channel.Consume(
@@ -77,7 +77,7 @@ func (c *Consumer) Consume(exchangeName string,
 		defaultArgs["noLocal"].(bool), defaultArgs["noWait"].(bool),
 		nil)
 	if err != nil {
-		panic("Consume Error: %v")
+		panic(err)
 	}
 	threadCount := defaultArgs["threads"].(int)
 	for i := 0; i < threadCount; i++ {
