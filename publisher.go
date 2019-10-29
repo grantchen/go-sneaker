@@ -19,12 +19,15 @@ func NewPublisher(amqpUrl, exchangeName string) (*Publisher, error) {
 	if err != nil {
 		return nil, err
 	}
-	publisher := Publisher{Channel: channel}
+	publisher := Publisher{Channel: channel, ExchangeName: exchangeName}
 	return &publisher, nil
 }
 
 // publish a worker queue
 func (c *Publisher) Publish(queueName, bodyContentType string, body []byte) error {
+	if bodyContentType == "" {
+		bodyContentType = "text/json"
+	}
 	err := c.Channel.ExchangeDeclare(
 		c.ExchangeName, // name
 		"direct",       // type
@@ -44,7 +47,7 @@ func (c *Publisher) Publish(queueName, bodyContentType string, body []byte) erro
 		false,          // immediate
 		amqp.Publishing{
 			ContentType: bodyContentType,
-			Body:        []byte(body),
+			Body:        body,
 		})
 	if err != nil {
 		return err
