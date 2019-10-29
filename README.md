@@ -15,7 +15,10 @@ send background task code sample
   }
   var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	dataJsonByte, _ := json.Marshal(map[string]string{"key": "value"})
-  Publisher.Publish("queue_name", "text/json", dataJsonByte)
+  err = Publisher.Publish("queue_name", "text/json", dataJsonByte)
+  if err != nil {
+		panic(err)
+  }
 ```
 
 #### Publish Parameters
@@ -36,9 +39,9 @@ background task handle worker sample
   if err != nil {
     panic(err)
   }
-  Consumer.Consume("queue_name", map[string]interface{}{}, handleWorker)
-	if err != nil {
-		panic(err)
+  err = Consumer.Consume("queue_name", map[string]interface{}{}, handleWorker)
+  if err != nil {
+    panic(err)
   }
   func handleWorker(body []byte){
     //...
