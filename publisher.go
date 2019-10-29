@@ -5,6 +5,7 @@ import (
 )
 
 type Publisher struct {
+	Connection   *amqp.Connection
 	Channel      *amqp.Channel
 	ExchangeName string
 }
@@ -19,7 +20,7 @@ func NewPublisher(amqpUrl, exchangeName string) (*Publisher, error) {
 	if err != nil {
 		return nil, err
 	}
-	publisher := Publisher{Channel: channel, ExchangeName: exchangeName}
+	publisher := Publisher{Connection: amqpConn, Channel: channel, ExchangeName: exchangeName}
 	return &publisher, nil
 }
 
@@ -53,4 +54,9 @@ func (c *Publisher) Publish(queueName, bodyContentType string, body []byte) erro
 		return err
 	}
 	return nil
+}
+
+func (c *Publisher) Close() {
+	c.Channel.Close()
+	c.Connection.Close()
 }

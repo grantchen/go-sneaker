@@ -25,12 +25,16 @@ Publisher, err := sneaker.NewPublisher(amqp_url, exchange_key))
 if err != nil {
   panic(err)
 }
+
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 dataJsonByte, _ := json.Marshal(map[string]string{"key": "value"})
 err = Publisher.Publish("queue_name", "text/json", dataJsonByte)
 if err != nil {
   panic(err)
 }
+
+// if not use can close it
+Publisher.Close()
 ```
 
 #### Publish Parameters
@@ -51,10 +55,12 @@ Consumer, err := sneaker.NewConsumer(amqp_url, exchange_key))
 if err != nil {
   panic(err)
 }
+
 err = Consumer.Consume("queue_name", map[string]interface{}{}, handleWorker)
 if err != nil {
   panic(err)
 }
+
 func handleWorker(body []byte){
   //...
 }
