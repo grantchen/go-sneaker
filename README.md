@@ -9,21 +9,23 @@ A fast background processing framework for Golang and RabbitMQ
 send background task code sample
 
 ```go
-    Publisher, err := sneaker.NewPublisher(amqp_url, exchange_key))
+  Publisher, err := sneaker.NewPublisher(amqp_url, exchange_key))
 	if err != nil {
 		panic(err)
-    }
-    var json = jsoniter.ConfigCompatibleWithStandardLibrary
+  }
+  var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	dataJsonByte, _ := json.Marshal(map[string]string{"key": "value"})
-    Publisher.Publish("queue_name", "text/json", dataJsonByte)
+  Publisher.Publish("queue_name", "text/json", dataJsonByte)
 ```
 
 #### Publish Parameters
 Publish(queueName, bodyContentType string, body []byte)
 
+```go
 queueName - Queue Name
 bodyContentType - send body content type. Default is text/json
 body - send data body byte
+```
 
 ### Consumer
 
@@ -34,25 +36,26 @@ background task handle worker sample
 	if err != nil {
 		panic(err)
 	}
-    Consumer.Consume("queue_name", map[string]interface{}{}, handleWorker)
+  Consumer.Consume("queue_name", map[string]interface{}{}, handleWorker)
 	if err != nil {
 		panic(err)
-    }
-    
-    func handleWorker(body []byte){
-      //...
-    }
+  }
+  func handleWorker(body []byte){
+    //...
+  }
 ```
 
 #### Consume Parameters
 Consume(queueName string, args map[string]interface{}, f fn)
 
+```go
 queueName - Queue Name
-args - consume releated params. Deafult values: 
-     "durable": true, "autoDelete": false, "autoAck": false,
-		 "exclusive": false, "noWait": false,
-		 "noLocal": false, "consumer": "", "threads": 5
+args - consume releated params. Deafult values:
 
+     {"durable": true, "autoDelete": false, "autoAck": false,
+		 "exclusive": false, "noWait": false,
+		 "noLocal": false, "consumer": "", "threads": 5}
+    
      durable - is queue durable
      autoDelete - is queue delete when unused
      autoAck - is consume auto ack
@@ -63,3 +66,4 @@ args - consume releated params. Deafult values:
      threads - how many threads to handle worker method f
 
 f - handle body method
+```
