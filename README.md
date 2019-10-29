@@ -32,10 +32,10 @@ body - send data body byte
 background task handle worker sample
 
 ```go
-	Consumer, err := sneaker.NewConsumer(amqp_url, exchange_key))
-	if err != nil {
-		panic(err)
-	}
+  Consumer, err := sneaker.NewConsumer(amqp_url, exchange_key))
+  if err != nil {
+    panic(err)
+  }
   Consumer.Consume("queue_name", map[string]interface{}{}, handleWorker)
 	if err != nil {
 		panic(err)
