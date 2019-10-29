@@ -4,21 +4,33 @@ A fast background processing framework for Golang and RabbitMQ
 
 ## Usage
 
+Use go get
+
+```go
+go get github.com/grantchen/go-sneaker
+```
+
+Then import the go-sneaker package into your own code.
+
+```go
+import "github.com/grantchen/go-sneaker"
+```
+
 ### Publisher
 
 send background task code sample
 
 ```go
-  Publisher, err := sneaker.NewPublisher(amqp_url, exchange_key))
-	if err != nil {
-		panic(err)
-  }
-  var json = jsoniter.ConfigCompatibleWithStandardLibrary
-	dataJsonByte, _ := json.Marshal(map[string]string{"key": "value"})
-  err = Publisher.Publish("queue_name", "text/json", dataJsonByte)
-  if err != nil {
-		panic(err)
-  }
+Publisher, err := sneaker.NewPublisher(amqp_url, exchange_key))
+if err != nil {
+  panic(err)
+}
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
+dataJsonByte, _ := json.Marshal(map[string]string{"key": "value"})
+err = Publisher.Publish("queue_name", "text/json", dataJsonByte)
+if err != nil {
+  panic(err)
+}
 ```
 
 #### Publish Parameters
@@ -35,17 +47,17 @@ body - send data body byte
 background task handle worker sample
 
 ```go
-  Consumer, err := sneaker.NewConsumer(amqp_url, exchange_key))
-  if err != nil {
-    panic(err)
-  }
-  err = Consumer.Consume("queue_name", map[string]interface{}{}, handleWorker)
-  if err != nil {
-    panic(err)
-  }
-  func handleWorker(body []byte){
-    //...
-  }
+Consumer, err := sneaker.NewConsumer(amqp_url, exchange_key))
+if err != nil {
+  panic(err)
+}
+err = Consumer.Consume("queue_name", map[string]interface{}{}, handleWorker)
+if err != nil {
+  panic(err)
+}
+func handleWorker(body []byte){
+  //...
+}
 ```
 
 #### Consume Parameters
