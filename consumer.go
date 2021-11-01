@@ -170,7 +170,6 @@ func (c *Consumer) Consume(queueName string, args map[string]interface{}, f fn) 
 		threadCount := args["threads"].(int)
 		for i := 0; i < threadCount; i++ {
 			go func() {
-				//for msg := range c.consumers.chans[queueName].deliveries {
 				for msg := range deliveries {
 					f(msg.Body)
 					if !args["autoAck"].(bool) {
